@@ -1,0 +1,198 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "wazuh-alerts",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d437fb7d-684c-4af0-a344-118a095b1851",
+      "name": "Webhook",
+      "webhookId": "71cc1694-3e17-40a5-8e9f-40238bfa2946"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "be70763f-a7a9-4a9b-adfc-744088a473b2",
+              "leftValue": "={{ $json.body.rule.level }}",
+              "rightValue": 5,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        0
+      ],
+      "id": "32302ba5-c110-486b-9af6-428acc52f254",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "jsCode": "const wazuhData = $(\"Filter\").first().json.body || {};\nconst realSrcIp = wazuhData.data?.srcip || '';\n\n// Remplace par le vrai mot de passe de ton utilisateur sur la VM Ubuntu Agent\nconst sudoPassword = 'MOT_DE_PASSE_MASQUE'; \n\nreturn [{\n  json: {\n    realSrcIp,\n    blockCommand: `echo '${sudoPassword}' | sudo -S iptables -A INPUT -s ${realSrcIp} -j DROP`\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        0
+      ],
+      "id": "497e278d-ec02-443b-b0cf-b0cbf11dd2f6",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.abuseipdb.com/api/v2/check?ipAddress={{ $json.target_ip }}&maxAgeInDays=90",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Key",
+              "value": "d6930edc6e42aac6e3036adaa513f6488ab7ddca1f425d0cca641dd60a544881d4f843d4077e08a9"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        672,
+        0
+      ],
+      "id": "f800961b-59c7-4d7a-ac78-8d842abf2578",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || {};\nconst srcip = body.data?.srcip || '';\n\n// Vérification si l'IP est privée, locale ou vide\nconst isPrivate = !srcip || \n                  srcip.startsWith('192.168.') || \n                  srcip.startsWith('10.') || \n                  srcip.startsWith('172.') || \n                  srcip.startsWith('127.');\n\nconst targetIp = isPrivate ? '118.25.6.39' : srcip;\n\nreturn [{\n  json: {\n    ...$input.first().json,\n    target_ip: targetIp\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "524d6f0b-e4b4-45a6-b509-c0c4b9fa401f",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "command": "={{ $json.blockCommand }}"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "137158b4-25c9-492f-ad07-3dedf0b2fff1",
+      "name": "Execute a command",
+      "credentials": {
+        "sshPassword": {
+          "id": "V6uhtBndLz7g4I14",
+          "name": "SSH Password account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Execute a command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "a1c5d6b6-138e-4580-8258-eafdb7852243",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7de628261e6ad043c90518f1e3883d4014223ef7d851a5429a04a49662ef55ea"
+  },
+  "nodeGroups": [],
+  "id": "miP3JtbNinlBUamy",
+  "tags": []
+}
