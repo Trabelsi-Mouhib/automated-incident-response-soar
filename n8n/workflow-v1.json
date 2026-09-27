@@ -1,0 +1,105 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "wazuh-alerts",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d437fb7d-684c-4af0-a344-118a095b1851",
+      "name": "Webhook",
+      "webhookId": "71cc1694-3e17-40a5-8e9f-40238bfa2946"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "be70763f-a7a9-4a9b-adfc-744088a473b2",
+              "leftValue": "={{ $json.body.rule.level }}",
+              "rightValue": 5,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        0
+      ],
+      "id": "32302ba5-c110-486b-9af6-428acc52f254",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body;\n\nconst alertLevel = body.rule.level || 'Inconnu';\nconst description = body.rule.description || 'Pas de description';\nconst ruleId = body.rule.id || 'N/A';\nconst srcIp = body.data?.srcip || 'N/A';\nconst targetAgent = body.agent?.name || 'Inconnu';\nconst targetIp = body.agent?.ip || 'N/A';\nconst fullLog = body.full_log || 'Aucun log brut';\nconst timestamp = body.timestamp || new Date().toISOString();\n\nconst formattedMessage = `🚨 **ALERTE SOC - SÉVÉRITÉ ${alertLevel}** 🚨\\n\\n` +\n  `**Règle :** ${description} (ID:${ruleId})\\n` +\n  `**Attaquant (IP Source) :** \\`${srcIp}\\`\\n` +\n  `**Cible :** ${targetAgent} (\\`${targetIp}\\`)\\n` +\n  `**Horodatage :** ${timestamp}\\n\\n` +\n  `**Log brut :**\\n\\`\\`\\`${fullLog}\\`\\`\\``;\n\nreturn [{\n  json: {\n    formattedMessage,\n    srcIp,\n    targetAgent,\n    alertLevel\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "497e278d-ec02-443b-b0cf-b0cbf11dd2f6",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "95b7e5c1-03ab-47ea-ad96-e2f22d6e9e42",
+  "meta": {
+    "instanceId": "7de628261e6ad043c90518f1e3883d4014223ef7d851a5429a04a49662ef55ea"
+  },
+  "nodeGroups": [],
+  "id": "miP3JtbNinlBUamy",
+  "tags": []
+}

@@ -2,3 +2,6 @@
 *.tmp
 .env
 __pycache__/
+single-node/config/wazuh_indexer_ssl_certs/
+wazuh/wazuh-docker/
+*.log
