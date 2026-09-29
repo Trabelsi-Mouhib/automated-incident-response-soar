@@ -53,6 +53,15 @@ A professional-grade **Security Orchestration, Automation, and Response (SOAR)**
 
 ---
 
+## 🔄 Modularity & Extensibility
+
+This platform features a **fully decoupled architecture**. While this deployment demonstrates SSH brute-force remediation, the downstream SOAR response engine is completely agnostic to the attack vector:
+
+* **Web Application Attacks (SQLi, XSS, Path Traversal):** Ingest Web Server logs (Nginx/Apache) into Wazuh $\rightarrow$ Trigger automated containment.
+* **Reconnaissance (Nmap Port Scans):** Pair Suricata IDS or firewall logs with Wazuh $\rightarrow$ Instant dynamic IP block.
+* **Zero-Code Pipeline Changes:** Any Wazuh alert generating a source IP (`srcip`) above severity level 5 triggers this exact remediation pipeline without modifying the n8n workflow or script logic.
+
+
 ## 🖼️ Proof of Concept & Validation
 
 ### 1. n8n SOAR Workflow Execution
