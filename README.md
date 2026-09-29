@@ -11,6 +11,7 @@ A professional-grade **Security Orchestration, Automation, and Response (SOAR)**
 
 ## 📐 System Architecture
 
+```text
 +------------------+          +------------------+          +------------------+
 |                  |  SSH     |                  | Logs     |                  |
 |  Attacker (Kali) | -------> |   Ubuntu Agent   | -------> |  Wazuh Manager   |
@@ -24,7 +25,7 @@ A professional-grade **Security Orchestration, Automation, and Response (SOAR)**
 |   AbuseIPDB API  | <------- |    n8n Engine    | <------- | Custom Integrat. |
 |  (Threat Intel)  |  Reput.  |   (SOAR Engine)  |  Alert   | (custom-n8n.py)  |
 +------------------+          +------------------+          +------------------+
-
+```
 
 ---
 
